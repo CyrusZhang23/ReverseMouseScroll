@@ -1,37 +1,31 @@
-# ReverseMouseScroll 🖱️🔄
+# ReverseMouseScroll 🖱️🔄 (V1.0)
 
-A lightweight, native macOS CLI tool to reverse mouse scroll direction independently of the trackpad.
-Designed for geeks who want **"Natural Scrolling" on Trackpad** but **"Standard Scrolling" on Mouse**.
+这是一个轻量级的 macOS 命令行工具，用于独立反转鼠标滚轮方向（不影响触控板）。
 
-## ✨ Features
+## 🚀 快速开始 (Xcode 开发版)
 
-- **Native Swift**: Built with CoreGraphics & EventTap. Near-zero CPU usage.
-- **Smart Logic**: Only reverses physical mouse scroll, leaves trackpad untouched.
-- **Sleep Proof**: Automatically reconnects after system sleep/wake.
-- **No Dependencies**: Just a single binary.
+目前 V1.0 版本建议通过 Xcode 编译运行以确保权限正确加载。
 
-## 🚀 One-Line Install (The Geek Way)
+1. **下载项目**：点击 `Code > Download ZIP` 或 `git clone`。
+2. **打开工程**：双击打开 `ReverseMouseScroll.xcodeproj`。
+3. **编译运行**：
+   - 在 Xcode 中点击 **Product > Build**。
+   - 找到编译产物路径（通常在 `DerivedData` 文件夹下）。
+   - 在终端进入该目录，运行：
+     ```bash
+     ./ReverseMouseScroll --install
+     ```
+4. **授予权限**：
+   - 此时系统会弹窗。
+   - 前往 `系统设置 > 隐私与安全性 > 辅助功能`。
+   - 找到 `ReverseMouseScroll` 并开启开关。
+   - **注意**：如果已经存在旧记录，请先点击 `-` 号删除后再重新勾选。
 
-Copy and run this command in your Terminal:
-
+## 🛠 卸载
+运行：
 ```bash
-/bin/bash -c "$(curl -fsSL [https://raw.githubusercontent.com/CyrusZhang23/ReverseMouseScroll/main/install.sh](https://raw.githubusercontent.com/CyrusZhang23/ReverseMouseScroll/main/install.sh))"
-```
-
-## 🛠 Usage
-
-Once installed, the service runs in the background automatically.
-
-**Check status:**
-```bash
-ReverseMouseScroll --status
-```
-
-**Uninstall:**
-```bash
-ReverseMouseScroll --uninstall
+./ReverseMouseScroll --uninstall
 ```
 
 ## 📄 License
-
 MIT License
