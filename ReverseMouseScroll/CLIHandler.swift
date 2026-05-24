@@ -65,17 +65,22 @@ class CLIHandler {
         var i = 0
         while i < args.count {
             let currentArg = args[i].lowercased()
-            if (currentArg == "x" || currentArg == "y") && i + 1 < args.count {
+            if currentArg == "x" || currentArg == "y" {
+                guard i + 1 < args.count else {
+                    print("❌ Error: Missing value for axis '\(currentArg.uppercased())'. Use 'normal' or 'reverse'.")
+                    exit(1)
+                }
                 let mode = args[i+1].lowercased()
                 if mode == "normal" || mode == "reverse" {
                     ConfigManager.shared.setReverse(axis: currentArg, mode: mode)
                     i += 2
                 } else {
-                    print("❌ Error: Invalid mode '\(mode)'. Use 'normal' or 'reverse'.")
-                    return
+                    print("❌ Error: Invalid mode '\(mode)' for axis '\(currentArg.uppercased())'. Use 'normal' or 'reverse'.")
+                    exit(1)
                 }
             } else {
-                i += 1
+                print("❌ Error: Unknown argument '\(args[i])'. Expected 'x' or 'y'.")
+                exit(1)
             }
         }
     }

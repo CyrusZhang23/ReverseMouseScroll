@@ -131,17 +131,23 @@ struct LaunchAgentManager {
         }
     }
 
-    private static func launchctlLoad() {
-        _ = runCommand("/bin/launchctl", args: ["unload", launchAgentPlistURL.path])
-        _ = runCommand("/bin/launchctl", args: ["load", "-w", launchAgentPlistURL.path])
+    private static var guiTarget: String {
+        return "gui/\(getuid())"
     }
-    
+
+    private static func launchctlLoad() {
+        // 先 bootout 确保干净状态（忽略可能的报错）
+        _ = runCommand("/bin/launchctl", args: ["bootout", guiTarget, launchAgentPlistURL.path])
+        _ = runCommand("/bin/launchctl", args: ["bootstrap", guiTarget, launchAgentPlistURL.path])
+    }
+
     private static func launchctlUnload() {
-        _ = runCommand("/bin/launchctl", args: ["unload", launchAgentPlistURL.path])
+        _ = runCommand("/bin/launchctl", args: ["bootout", guiTarget, launchAgentPlistURL.path])
     }
     
     private static func isAgentRunning() -> Bool {
-        return runCommand("/bin/launchctl", args: ["list"]).contains(label)
+        let output = runCommand("/bin/launchctl", args: ["print", "\(guiTarget)/\(label)"])
+        return output.contains("state = running")
     }
     
     private static func runCommand(_ launchPath: String, args: [String]) -> String {
