@@ -1,31 +1,140 @@
-# ReverseMouseScroll 🖱️🔄 (V1.0)
+# ReverseMouseScroll 🖱️
 
-这是一个轻量级的 macOS 命令行工具，用于独立反转鼠标滚轮方向（不影响触控板）。
+A lightweight macOS CLI tool that reverses mouse scroll wheel direction **without affecting the trackpad or Magic Mouse**.
 
-## 🚀 快速开始 (Xcode 开发版)
+Runs as a background service, survives sleep/wake cycles, and persists across reboots.
 
-目前 V1.0 版本建议通过 Xcode 编译运行以确保权限正确加载。
+---
 
-1. **下载项目**：点击 `Code > Download ZIP` 或 `git clone`。
-2. **打开工程**：双击打开 `ReverseMouseScroll.xcodeproj`。
-3. **编译运行**：
-   - 在 Xcode 中点击 **Product > Build**。
-   - 找到编译产物路径（通常在 `DerivedData` 文件夹下）。
-   - 在终端进入该目录，运行：
-     ```bash
-     ./ReverseMouseScroll --install
-     ```
-4. **授予权限**：
-   - 此时系统会弹窗。
-   - 前往 `系统设置 > 隐私与安全性 > 辅助功能`。
-   - 找到 `ReverseMouseScroll` 并开启开关。
-   - **注意**：如果已经存在旧记录，请先点击 `-` 号删除后再重新勾选。
+## Install via Homebrew
 
-## 🛠 卸载
-运行：
 ```bash
-./ReverseMouseScroll --uninstall
+brew tap CyrusZhang23/reversemousescroll
+brew install reversemousescroll
 ```
 
-## 📄 License
-MIT License
+Then run the setup:
+
+```bash
+ReverseMouseScroll --install
+```
+
+---
+
+## Setup
+
+When you run `--install`, it will:
+
+1. Copy the binary to `~/Library/Application Support/ReverseMouseScroll/`
+2. Register a launchd service (auto-start on login)
+3. Open Finder highlighting the installed binary
+4. Open **System Settings → Privacy & Security → Accessibility**
+
+**Drag the highlighted file into the Accessibility list and enable it**, then press Enter to finish.
+
+> **Note:** If an old entry already exists in Accessibility, remove it first (click `−`), then re-add.
+
+---
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `--install` | Install and start the background service |
+| `--uninstall` | Stop the service and remove all files |
+| `--status` | Show whether the service is running |
+| `--show` | Show current scroll direction config |
+| `--setreverse` | Change scroll direction (see below) |
+| `--run` | Run in foreground for debugging (Ctrl+C to stop) |
+
+### `--setreverse` usage
+
+Set X and Y axes independently. Both can be changed in one command.
+
+```bash
+# Reverse vertical scroll (most common — matches Windows-style)
+ReverseMouseScroll --setreverse y reverse
+
+# Restore vertical to normal
+ReverseMouseScroll --setreverse y normal
+
+# Reverse horizontal scroll
+ReverseMouseScroll --setreverse x reverse
+
+# Set both at once
+ReverseMouseScroll --setreverse y reverse x normal
+```
+
+Valid values: `normal` | `reverse`
+
+Changes take effect immediately — no need to restart the service.
+
+### `--show` output
+
+```
+X-Axis: Normal ➡️
+Y-Axis: Reverse 🔄
+```
+
+### `--status` output
+
+```
+Status: Running
+Status: Installed (Stopped)
+Status: Not Installed
+```
+
+---
+
+## Default Behavior
+
+| Axis | Default |
+|------|---------|
+| Y (vertical) | `reverse` |
+| X (horizontal) | `normal` |
+
+---
+
+## How It Works
+
+- Uses `CGEventTap` to intercept scroll wheel events at the session level
+- Detects event source: `isContinuous == 0` means physical mouse wheel → applies reversal; trackpad and Magic Mouse use continuous events → passed through unchanged
+- Config is stored in `UserDefaults` and read on every event, so `--setreverse` updates take effect instantly without restarting
+- The launchd service uses `KeepAlive: true` to auto-restart on crash
+- On sleep/wake, the event tap is automatically rebuilt
+
+---
+
+## Uninstall
+
+```bash
+ReverseMouseScroll --uninstall
+```
+
+This stops the service, removes the launchd plist, and deletes the binary from Application Support. After uninstalling via Homebrew:
+
+```bash
+brew uninstall reversemousescroll
+brew untap CyrusZhang23/reversemousescroll
+```
+
+Then manually remove the entry from **System Settings → Privacy & Security → Accessibility**.
+
+---
+
+## Build from Source
+
+Requires Xcode 14+ and macOS 12+.
+
+```bash
+git clone https://github.com/CyrusZhang23/ReverseMouseScroll.git
+cd ReverseMouseScroll
+swift build -c release
+.build/release/ReverseMouseScroll --install
+```
+
+---
+
+## License
+
+MIT
