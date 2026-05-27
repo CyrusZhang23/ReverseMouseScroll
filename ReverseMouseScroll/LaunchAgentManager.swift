@@ -142,6 +142,9 @@ struct LaunchAgentManager {
     private static func launchctlLoad() {
         // 先 bootout 确保干净状态（忽略可能的报错）
         _ = runCommand("/bin/launchctl", args: ["bootout", guiTarget, launchAgentPlistURL.path])
+        // 服务崩溃次数过多时 launchd 会将其标记为 disabled，此后 bootstrap 直接返回 error 5
+        // 在 bootstrap 前显式 enable，确保崩溃保护不会阻止重新注册
+        _ = runCommand("/bin/launchctl", args: ["enable", "\(guiTarget)/\(label)"])
         _ = runCommand("/bin/launchctl", args: ["bootstrap", guiTarget, launchAgentPlistURL.path])
     }
 
