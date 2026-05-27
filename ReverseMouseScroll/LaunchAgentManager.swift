@@ -93,19 +93,23 @@ struct LaunchAgentManager {
     // MARK: - Internal Helpers
     private static func selfInstallBinary() throws {
         let fm = FileManager.default
-        if !fm.fileExists(atPath: appSupportDirURL.path) {
-            try fm.createDirectory(at: appSupportDirURL, withIntermediateDirectories: true)
-        }
-        
+
+        // 确保目标目录存在
+        try fm.createDirectory(at: appSupportDirURL, withIntermediateDirectories: true)
+
+        // 解析符号链接，确保拿到真实的可执行文件路径（brew 安装时 arguments[0] 是 symlink）
         let sourceURL = URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0])
-        
+            .resolvingSymlinksInPath()
+
         // 如果当前已经在安装目录运行，就不复制了
         if sourceURL.standardizedFileURL == installedBinaryURL.standardizedFileURL { return }
-        
-        if fm.fileExists(atPath: installedBinaryURL.path) {
+
+        // 用 attributesOfItem（内部用 lstat）检测目标位置是否存在任何文件/符号链接
+        // fileExists(atPath:) 会跟随符号链接，对「悬空符号链接」返回 false，导致无法清理旧文件
+        if (try? fm.attributesOfItem(atPath: installedBinaryURL.path)) != nil {
             try fm.removeItem(at: installedBinaryURL)
         }
-        
+
         try fm.copyItem(at: sourceURL, to: installedBinaryURL)
         try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: installedBinaryURL.path)
     }
